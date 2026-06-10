@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>ARQADEX CTF — Competitive Intelligence Arena</title>
+  <meta name="description" content="The world-class CTF competition platform by ARQADEX. Host, compete, conquer.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Persistent visual layer -->
+  <canvas id="bg-canvas"></canvas>
+  <div class="scanlines"></div>
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- Navigation (injected by app) -->
+  <div id="nav-root"></div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container"></div>
+
+  <!-- Achievement popup -->
+  <div id="achievement-popup" class="achievement-popup hidden">
+    <div class="ach-icon" id="ach-icon">🏆</div>
+    <div class="ach-info">
+      <div class="ach-label">ACHIEVEMENT UNLOCKED</div>
+      <div class="ach-name" id="ach-name">FIRST BLOOD</div>
+    </div>
+  </div>
+
+  <!-- Main content (router target) -->
+  <main id="app-root"></main>
+
+  <!-- Modal layer -->
+  <div id="modal-root"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

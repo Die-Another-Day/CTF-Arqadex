@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: arqadex_ctf
+      POSTGRES_USER: arqadex
+      POSTGRES_PASSWORD: arqadex_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arqadex -d arqadex_ctf"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  server:
+    build: ./server
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://arqadex:arqadex_dev_password@db:5432/arqadex_ctf
+      JWT_SECRET: dev-jwt-secret-change-in-production-please
+      FLAG_SECRET: dev-flag-secret-change-in-production-please
+      PORT: 3001
+      NODE_ENV: development
+      FRONTEND_URL: "*"
+    volumes:
+      - ./server:/app
+      - ./frontend:/app/../frontend
+      - /app/node_modules
+
+volumes:
+  pgdata:
