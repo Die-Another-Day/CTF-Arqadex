@@ -756,9 +756,26 @@ async function buildChallengeManager(eventId){
           <div class="form-group"><label class="form-label">DIFFICULTY (1-5)</label><input class="form-input" type="number" id="ch-diff" min="1" max="5" placeholder="3"></div>
         </div>
         <div class="form-group" style="margin-bottom:14px"><label class="form-label">DESCRIPTION</label><textarea class="form-textarea" id="ch-desc" placeholder="Describe the challenge..."></textarea></div>
+        
+
+
         <div class="form-group" style="margin-bottom:14px"><label class="form-label">BASE FLAG <span style="color:var(--mu);font-size:7px">— TEAM DERIVATIVES AUTO-GENERATED</span></label><input class="form-input" id="ch-flag" placeholder="ARQADEX{...}"></div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">CHALLENGE FILES <span style="color:var(--mu);font-size:7px">— PASTE URLS (GitHub Releases, Google Drive, Mega...)</span></label>
+          <div id="ch-files-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+          <button type="button" class="btn btn-sm btn-ghost" onclick="addFileRow()">+ ADD FILE</button>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:6px">Upload file anywhere → copy link → paste here. Google Drive: Share → Anyone with link → copy link.</div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">HINTS <span style="color:var(--mu);font-size:7px">— OPTIONAL, DEDUCTS POINTS FROM TEAM</span></label>
+          <div id="ch-hints-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+          <button type="button" class="btn btn-sm btn-ghost" onclick="addHintRow()">+ ADD HINT</button>
+        </div>
+
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn btn-primary" onclick="saveChallenge('${eventId}')">SAVE CHALLENGE</button>
+
+
           <button class="btn btn-ghost" onclick="toggleAddForm()">CANCEL</button>
           <label style="display:flex;align-items:center;gap:8px;cursor:none;font-family:var(--mono);font-size:10px;color:var(--or);margin-left:auto"><input type="checkbox" id="ch-honeypot" style="accent-color:var(--or)"> Honeypot (trap)</label>
         </div>
@@ -798,8 +815,24 @@ function viewCreateEvent(){ return`<div class="page-wrap"><div class="container"
       <div class="form-group"><label class="form-label">TEAM SIZE</label><input class="form-input" type="number" id="ev-teamsize" placeholder="4"></div>
     </div>
     <div class="form-group"><label class="form-label">CATEGORIES (comma-separated)</label><input class="form-input" id="ev-cats" placeholder="web,pwn,crypto,re,osint,dfir,stego,misc"></div>
+
+
+
+
     <div class="form-group"><label class="form-label">PRIZES (comma-separated)</label><input class="form-input" id="ev-prizes" placeholder="$5,000,$2,500,$1,000"></div>
+    <div class="form-group"><label class="form-label">VISIBILITY STATUS</label>
+      <select class="form-select" id="ev-status">
+        <option value="published" selected>PUBLISHED — visible to participants, registration open</option>
+        <option value="live">LIVE — competition is active right now</option>
+        <option value="draft">DRAFT — hidden, only you can see it</option>
+      </select>
+    </div>
+
     <div><div style="font-size:9px;letter-spacing:3px;color:var(--mu);margin-bottom:10px">INTEGRITY OPTIONS</div>
+
+
+
+
       <div style="display:flex;flex-direction:column;gap:8px">
         ${[['Per-team flag derivatives','ev-pertf',true],['IP clustering detection','ev-ipclust',true],['Rate limiting (10/min)','ev-ratelim',true],['Honeypot challenges','ev-honey',false]].map(([l,id,def])=>`<label style="display:flex;align-items:center;gap:10px;cursor:none;font-family:var(--mono);font-size:11px;color:var(--si)"><input type="checkbox" id="${id}" ${def?'checked':''} style="accent-color:var(--c)">${l}</label>`).join('')}
       </div>
@@ -1110,9 +1143,14 @@ window.submitCreateEvent=async()=>{
     const cats=(document.getElementById('ev-cats')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
     const prizes=(document.getElementById('ev-prizes')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
     if(!name||!slug){showToast('Name and slug required','error');return;}
+
+    const status=document.getElementById('ev-status')?.value||'published';
+
     const data=await API.post('/organizer/events',{
-      name,slug,
+      name,slug,status,
       description:document.getElementById('ev-desc')?.value||'',
+
+
       start_time:document.getElementById('ev-start')?.value||null,
       end_time:document.getElementById('ev-end')?.value||null,
       max_teams:parseInt(document.getElementById('ev-maxteams')?.value)||500,
@@ -1134,6 +1172,21 @@ window.saveChallenge=async(eventId)=>{
     const name=document.getElementById('ch-name')?.value.trim();
     const base_flag=document.getElementById('ch-flag')?.value.trim();
     if(!name||!base_flag){showToast('Name and flag required','error');return;}
+
+    // collect file rows
+    const files=[];
+    document.querySelectorAll('#ch-files-list > div').forEach(row=>{
+      const inp=row.querySelectorAll('input');
+      if(inp[0]?.value.trim()&&inp[1]?.value.trim())
+        files.push({name:inp[0].value.trim(),url:inp[1].value.trim()});
+    });
+    // collect hint rows
+    const hints=[];
+    document.querySelectorAll('#ch-hints-list > div').forEach(row=>{
+      const inp=row.querySelectorAll('input');
+      if(inp[0]?.value.trim()) hints.push({text:inp[0].value.trim(),cost:parseInt(inp[1]?.value)||50});
+    });
+
     await API.post('/organizer/challenges',{
       event_id:eventId,name,
       category:document.getElementById('ch-cat')?.value||'misc',
@@ -1145,8 +1198,34 @@ window.saveChallenge=async(eventId)=>{
     showToast('Challenge saved!','success');
     if(msg) msg.innerHTML=`<div style="color:var(--li);font-family:var(--mono);font-size:11px">✓ Saved</div>`;
     setTimeout(()=>render(),800);
+
+
+
   } catch(err){ if(msg) msg.innerHTML=`<div style="color:var(--re);font-family:var(--mono);font-size:11px">${err.message}</div>`; }
 };
+
+window.addFileRow=function(){
+  const list=document.getElementById('ch-files-list');if(!list)return;
+  const row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:1fr 2fr 32px;gap:8px;align-items:center';
+  row.innerHTML=`<input class="form-input" placeholder="filename.zip" style="font-size:11px"><input class="form-input" placeholder="https://..." style="font-size:11px"><button type="button" onclick="this.closest('div').remove()" style="background:rgba(255,32,32,.1);border:1px solid rgba(255,32,32,.3);color:var(--re);border-radius:4px;width:32px;height:36px;font-size:16px;cursor:pointer">×</button>`;
+  list.appendChild(row);
+};
+
+window.addHintRow=function(){
+  const list=document.getElementById('ch-hints-list');if(!list)return;
+  const row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:1fr 90px 32px;gap:8px;align-items:center';
+  row.innerHTML=`<input class="form-input" placeholder="Hint text..." style="font-size:11px"><input class="form-input" type="number" placeholder="50" title="Point cost" style="font-size:11px"><button type="button" onclick="this.closest('div').remove()" style="background:rgba(255,32,32,.1);border:1px solid rgba(255,32,32,.3);color:var(--re);border-radius:4px;width:32px;height:36px;font-size:16px;cursor:pointer">×</button>`;
+  list.appendChild(row);
+};
+
+window.publishEvent=async function(eventId,name){
+  if(!confirm('Publish "'+name+'"? It will be visible to all participants.'))return;
+  try{await API.put('/organizer/events/'+eventId,{status:'published'});showToast('"'+name+'" is now public!','success');setOrgTab('overview');}
+  catch(err){showToast(err.message,'error');}
+};
+
 
 window.deleteChallenge=async(id)=>{
   if(!confirm('Delete challenge? This cannot be undone.'))return;

@@ -649,10 +649,21 @@ orgRouter.post('/challenges', async (req, res) => {
       [event_id, name, category, description || '', points || 500,
        difficulty || 3, base_flag, is_honeypot || false]);
     const ch = rows[0];
+
+
+
+
     if (hints?.length) {
       for (const [i, h] of hints.entries()) {
         await q('INSERT INTO challenge_hints(challenge_id,text,cost,sort_order) VALUES($1,$2,$3,$4)',
           [ch.id, h.text, h.cost || 50, i]);
+      }
+    }
+    const files = req.body.files || [];
+    for (const f of files) {
+      if (f.name && f.url) {
+        await q('INSERT INTO challenge_files(challenge_id,name,url) VALUES($1,$2,$3)',
+          [ch.id, f.name, f.url]);
       }
     }
     res.status(201).json({ challenge: ch });
