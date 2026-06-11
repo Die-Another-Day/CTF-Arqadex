@@ -7,7 +7,7 @@
 /* ══ API CONFIG ══════════════════════════════════════════ */
 const API = (()=>{
   const base = window.location.port === '8080' || window.location.hostname === 'localhost'
-    ? 'http://localhost:3001/api' : '/api';
+    ? 'http://localhost:3001/api' : 'https://ctf-arqadex.onrender.com/api';
   return {
     async call(endpoint, opts={}){
       const token = localStorage.getItem('arq_token');
@@ -31,7 +31,7 @@ const API = (()=>{
 let socket = null;
 function connectSocket(eventSlug){
   const wsUrl = window.location.port==='8080'||window.location.hostname==='localhost'
-    ? 'http://localhost:3001' : window.location.origin;
+    ? 'http://localhost:3001' : 'https://ctf-arqadex.onrender.com/api' ;
   if(typeof io === 'undefined') return;
   if(socket) socket.disconnect();
   socket = io(wsUrl, {transports:['websocket','polling']});
@@ -1209,7 +1209,7 @@ window.navigate=navigate;
 // Add socket.io client script
 if(typeof io==='undefined'){
   const s=document.createElement('script');
-  s.src=(window.location.port==='8080'||window.location.hostname==='localhost'?'http://localhost:3001':'')+'/socket.io/socket.io.js';
+  s.src=(window.location.port==='8080'||window.location.hostname==='localhost' ? 'http://localhost:3001/socket.io/socket.io.js': 'https://ctf-arqadex.onrender.com/socket.io/socket.io.js';
   s.onload=()=>console.log('[WS] Socket.io loaded');
   document.head.appendChild(s);
 }
