@@ -1209,7 +1209,9 @@ window.navigate=navigate;
 // Add socket.io client script
 if(typeof io==='undefined'){
   const s=document.createElement('script');
-  s.src=window.location.hostname==='localhost' ? 'http://localhost:3001/socket.io/socket.io.js':'https://ctf-arqadex.onrender.com/socket.io/socket.io.js';
+  s.src=window.location.hostname==='localhost'
+     ? 'http://localhost:3001/socket.io/socket.io.js'
+     : 'https://ctf-arqadex.onrender.com/socket.io/socket.io.js';
   s.onload=()=>console.log('[WS] Socket.io loaded');
   document.head.appendChild(s);
 }
