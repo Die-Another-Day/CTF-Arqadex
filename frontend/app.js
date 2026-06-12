@@ -678,10 +678,18 @@ async function orgTabContent(){
             <td style="font-weight:700">${e.name}</td>
             <td><span class="badge ${e.status==='live'?'badge-live':e.status==='published'?'badge-upcoming':'badge-past'}">${e.status.toUpperCase()}</span></td>
             <td style="color:var(--c)">${e.team_count||0}</td>
-            <td style="display:flex;gap:6px">
+
+
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
               <a href="#/organize/${e.id}/challenges"><button class="btn btn-sm btn-ghost">CHALLENGES</button></a>
               <a href="#/organize/${e.id}/anticheat"><button class="btn btn-sm btn-danger">INTEGRITY</button></a>
+              ${e.status==='draft'?`<button class="btn btn-sm btn-success" onclick="publishEvent('${e.id}','${e.name}')">PUBLISH</button>`:''}
+              ${e.status==='published'?`<button class="btn btn-sm" style="background:rgba(199,255,77,.12);border-color:rgba(199,255,77,.4);color:var(--li)" onclick="goLive('${e.id}','${e.name}')">⚡ GO LIVE</button>`:''}
+              ${e.status==='live'?`<button class="btn btn-sm btn-danger" onclick="endEvent('${e.id}','${e.name}')">END EVENT</button>`:''}
             </td>
+
+
+
           </tr>`).join('')}
         </tbody></table>`:`<div style="font-family:var(--mono);font-size:12px;color:var(--si);padding:20px 0">No events yet. <a href="#/organize/create" style="color:var(--c)">Create one →</a></div>`}
       </div>
@@ -1224,6 +1232,25 @@ window.publishEvent=async function(eventId,name){
   if(!confirm('Publish "'+name+'"? It will be visible to all participants.'))return;
   try{await API.put('/organizer/events/'+eventId,{status:'published'});showToast('"'+name+'" is now public!','success');setOrgTab('overview');}
   catch(err){showToast(err.message,'error');}
+};
+
+
+window.goLive=async function(eventId,name){
+  if(!confirm('Start "'+name+'" NOW?\n\nThis opens the competition — challenges become visible and the timer starts.'))return;
+  try{
+    await API.put('/organizer/events/'+eventId,{status:'live'});
+    showToast('⚡ "'+name+'" is now LIVE!','success');
+    setOrgTab('overview');
+  }catch(err){showToast(err.message,'error');}
+};
+
+window.endEvent=async function(eventId,name){
+  if(!confirm('End "'+name+'"?\n\nThis closes submissions. Final scores are locked.'))return;
+  try{
+    await API.put('/organizer/events/'+eventId,{status:'ended'});
+    showToast('"'+name+'" ended — final scores locked','success');
+    setOrgTab('overview');
+  }catch(err){showToast(err.message,'error');}
 };
 
 
